@@ -2,12 +2,15 @@ package no.recipeheaven;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
+import com.android.volley.VolleyError;
 import com.android.volley.toolbox.Volley;
 
 public class MainActivity extends AppCompatActivity {
@@ -23,14 +26,39 @@ public class MainActivity extends AppCompatActivity {
 
         setupToolbar();
 
+        getAllRecipes(new Response.Listener<Recipes>() {
+            @Override
+            public void onResponse(Recipes response) {
 
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
 
+            }
+        });
     }
 
     private void setupToolbar() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("RecipeHeaven");
         setSupportActionBar(toolbar);
+    }
+
+    private void setupRecyclerView(Recipes recipes) {
+        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerview);
+
+        LinearLayoutManager layoutManager =
+                new LinearLayoutManager(
+                        this,                           // Context
+                        LinearLayoutManager.VERTICAL,   // Orientation
+                        false                           // ReverseLayout
+                );
+
+        recyclerView.setLayoutManager(layoutManager);
+
+        
+
     }
 
     @Override
@@ -55,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public static GsonRequest<Recipes> getAllGames(Response.Listener<Recipes> successListener, Response.ErrorListener errorListener) {
+    public static GsonRequest<Recipes> getAllRecipes(Response.Listener<Recipes> successListener, Response.ErrorListener errorListener) {
         GsonRequest<Recipes> gamesRequest = new GsonRequest<>(
                 "http://www.godt.no/api/recipes/",
                 Recipes.class,
@@ -64,6 +92,5 @@ public class MainActivity extends AppCompatActivity {
                 errorListener
         );
         return gamesRequest;
-
     }
 }
