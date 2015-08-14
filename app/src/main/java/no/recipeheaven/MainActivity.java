@@ -1,5 +1,6 @@
 package no.recipeheaven;
 
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -7,6 +8,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -26,17 +28,18 @@ public class MainActivity extends AppCompatActivity {
 
         setupToolbar();
 
-        getAllRecipes(new Response.Listener<Recipes>() {
+        volleyQueue.add(getAllRecipes(new Response.Listener<Recipe[]>() {
             @Override
-            public void onResponse(Recipes response) {
-
+            public void onResponse(Recipe[] response) {
+                setupRecyclerView(response);
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-
+                // Error handling
+                System.out.println(error.toString());
             }
-        });
+        }));
     }
 
     private void setupToolbar() {
@@ -45,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
     }
 
-    private void setupRecyclerView(Recipes recipes) {
+    private void setupRecyclerView(Recipe[] recipes) {
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerview);
 
         LinearLayoutManager layoutManager =
@@ -56,9 +59,15 @@ public class MainActivity extends AppCompatActivity {
                 );
 
         recyclerView.setLayoutManager(layoutManager);
+        recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
+            @Override
+            public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+                int p = (int) view.getResources().getDimension(R.dimen.recycler_view_spacing);
+                outRect.set(p, p, p, p);
+            }
+        });
 
-        
-
+        recyclerView.setAdapter(new RecipeAdapter(recipes));
     }
 
     @Override
@@ -83,14 +92,13 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public static GsonRequest<Recipes> getAllRecipes(Response.Listener<Recipes> successListener, Response.ErrorListener errorListener) {
-        GsonRequest<Recipes> gamesRequest = new GsonRequest<>(
+    public static GsonRequest<Recipe[]> getAllRecipes(Response.Listener<Recipe[]> successListener, Response.ErrorListener errorListener) {
+        return new GsonRequest<>(
                 "http://www.godt.no/api/recipes/",
-                Recipes.class,
+                Recipe[].class,
                 null,
                 successListener,
                 errorListener
         );
-        return gamesRequest;
     }
 }
