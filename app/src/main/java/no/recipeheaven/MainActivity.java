@@ -1,16 +1,36 @@
 package no.recipeheaven;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.toolbox.Volley;
+
 public class MainActivity extends AppCompatActivity {
+
+    private RequestQueue volleyQueue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        volleyQueue = Volley.newRequestQueue(this);
+
         setContentView(R.layout.activity_main);
+
+        setupToolbar();
+
+
+
+    }
+
+    private void setupToolbar() {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle("RecipeHeaven");
+        setSupportActionBar(toolbar);
     }
 
     @Override
@@ -33,5 +53,17 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public static GsonRequest<Recipes> getAllGames(Response.Listener<Recipes> successListener, Response.ErrorListener errorListener) {
+        GsonRequest<Recipes> gamesRequest = new GsonRequest<>(
+                "http://www.godt.no/api/recipes/",
+                Recipes.class,
+                null,
+                successListener,
+                errorListener
+        );
+        return gamesRequest;
+
     }
 }
