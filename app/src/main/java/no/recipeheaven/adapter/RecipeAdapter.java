@@ -1,4 +1,4 @@
-package no.recipeheaven;
+package no.recipeheaven.adapter;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -9,15 +9,24 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import no.recipeheaven.R;
+import no.recipeheaven.model.Recipe;
+
 /**
  * Created by Sam Mathias Weggersen on 14/08/15.
  */
 public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeViewHolder> {
 
-    private Recipe[] recipes;
+    private List<Recipe> recipes = new ArrayList<>();
 
-    public RecipeAdapter(Recipe[] recipes) {
-        this.recipes = recipes;
+    public void setRecipes(List<Recipe> recipes) {
+        this.recipes.clear();
+        this.recipes.addAll(recipes);
+
+        notifyDataSetChanged();
     }
 
     public static class RecipeViewHolder extends RecyclerView.ViewHolder {
@@ -54,7 +63,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeView
 
     @Override
     public void onBindViewHolder(RecipeViewHolder h, int position) {
-        Recipe recipe = recipes[position];
+        Recipe recipe = recipes.get(position);
 
         Glide.with(h.itemView.getContext())
                 .load(recipe.image)
@@ -77,6 +86,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeView
 
     @Override
     public int getItemCount() {
-        return recipes.length;
+        return recipes.size();
     }
+
 }
