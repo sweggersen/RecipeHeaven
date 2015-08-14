@@ -24,7 +24,6 @@ public class RestBuilder<T> {
     private static RestAdapter sRestAdapter;
 
     private static RecipesService sRecipesService;
-    private static RecipeService sRecipeService;
 
     public RestBuilder() {
 
@@ -47,20 +46,24 @@ public class RestBuilder<T> {
         return sRestAdapter.create(service);
     }
 
+    @SuppressWarnings("unchecked")
     public static Observable<List<Recipe>> getRecipeListObservable() {
         if (sRecipesService == null) {
             sRecipesService = new RestBuilder<RecipesService>().build(RecipesService.class);
         }
-        return sRecipesService.listRecipes().cache()
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread());
+        return addCacheAndThreads(sRecipesService.listRecipes());
     }
 
+    @SuppressWarnings("unchecked")
     public static Observable<Recipe> getRecipeObservable(long id) {
-        if (sRecipeService == null) {
-            sRecipeService = new RestBuilder<RecipeService>().build(RecipeService.class);
+        if (sRecipesService == null) {
+            sRecipesService = new RestBuilder<RecipesService>().build(RecipesService.class);
         }
-        return sRecipeService.listRecipe(id).cache()
+        return addCacheAndThreads(sRecipesService.listRecipe(id));
+    }
+
+    private static Observable addCacheAndThreads(Observable observable) {
+        return observable.cache()
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread());
     }
