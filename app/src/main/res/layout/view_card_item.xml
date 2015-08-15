@@ -1,67 +1,90 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.CardView
+<layout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    app:cardBackgroundColor="@android:color/white"
-    app:cardElevation="@dimen/cardview_default_elevation"
-    app:cardCornerRadius="@dimen/cardview_default_radius">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:orientation="vertical"
+    <data>
+        <import type="no.recipeheaven.model.Recipe" />
+        <variable
+            name="recipe"
+            type="no.recipeheaven.model.Recipe" />
+    </data>
+
+    <android.support.v7.widget.CardView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <ImageView
-            android:id="@+id/image"
-            android:layout_width="match_parent"
-            android:layout_height="192dp"
-            android:scaleType="centerCrop"
-            android:background="@color/material_blue_grey_800"/>
+        android:layout_height="match_parent"
+        app:cardBackgroundColor="@android:color/white"
+        app:cardElevation="@dimen/cardview_default_elevation"
+        app:cardCornerRadius="@dimen/cardview_default_radius">
 
         <LinearLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:padding="16dp">
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="192dp"
+                android:scaleType="centerCrop"
+                android:background="@color/material_blue_grey_800"
+                app:imageUrl="@{recipe.imageUrl}" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text='@{String.valueOf(recipe.preparationTime + " min")}'
+                    android:textSize="14sp"
+                    android:textColor="@color/mtr_red_500"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@{String.valueOf(recipe.numberOfComments)}"
+                    android:textSize="14sp"
+                    android:textColor="@color/mtr_purple_500"
+                    android:paddingLeft="16dp"
+                    android:paddingRight="16dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@{String.valueOf(recipe.numberOfLikes)}"
+                    android:textSize="14sp"
+                    android:textColor="@color/mtr_indigo_500"/>
+
+            </LinearLayout>
 
             <TextView
-                android:id="@+id/prep_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="14sp"
-                android:textColor="@color/mtr_red_500"/>
-
-            <TextView
-                android:id="@+id/comments"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="14sp"
-                android:textColor="@color/mtr_purple_500"
+                android:text="@{recipe.title}"
+                android:textSize="18sp"
+                android:textColor="@android:color/black"
                 android:paddingLeft="16dp"
-                android:paddingRight="16dp"/>
+                android:paddingRight="16dp"
+                android:paddingBottom="16dp"/>
 
             <TextView
-                android:id="@+id/likes"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="14sp"
-                android:textColor="@color/mtr_indigo_500"/>
+                android:textColor="@android:color/black"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:paddingBottom="16dp"
+                app:publishedDate="@{recipe.publishedAt}"
+                app:updateDate="@{recipe.updatedAt}"/>
 
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:textColor="@android:color/black"
-            android:paddingLeft="16dp"
-            android:paddingRight="16dp"
-            android:paddingBottom="16dp"/>
+    </android.support.v7.widget.CardView>
 
-    </LinearLayout>
-</android.support.v7.widget.CardView>
+</layout>

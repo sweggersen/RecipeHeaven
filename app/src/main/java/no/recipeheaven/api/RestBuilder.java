@@ -1,14 +1,12 @@
 package no.recipeheaven.api;
 
-import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.internal.bind.DateTypeAdapter;
 
-import java.util.Date;
 import java.util.List;
 
 import no.recipeheaven.model.Recipe;
+import no.recipeheaven.util.Consts;
 import retrofit.RestAdapter;
 import retrofit.converter.GsonConverter;
 import rx.Observable;
@@ -29,14 +27,13 @@ public class RestBuilder<T> {
 
         if (sGson == null) {
             sGson = new GsonBuilder()
-                    .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
-                    .registerTypeAdapter(Date.class, new DateTypeAdapter())
+                    .setDateFormat(Consts.DEFAULT_DATE_FORMAT)
                     .create();
         }
 
         if (sRestAdapter == null) {
             sRestAdapter = new RestAdapter.Builder()
-                    .setEndpoint("http://www.godt.no/api")
+                    .setEndpoint(Consts.API_BASE_PATH)
                     .setConverter(new GsonConverter(sGson))
                     .build();
         }
@@ -47,11 +44,11 @@ public class RestBuilder<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public static Observable<List<Recipe>> getRecipeListObservable() {
+    public static Observable<List<Recipe>> getRecipeListObservable(int offset, int limit) {
         if (sRecipesService == null) {
             sRecipesService = new RestBuilder<RecipesService>().build(RecipesService.class);
         }
-        return addCacheAndThreads(sRecipesService.listRecipes());
+        return addCacheAndThreads(sRecipesService.listRecipes(offset, limit, false));
     }
 
     @SuppressWarnings("unchecked")
@@ -64,6 +61,7 @@ public class RestBuilder<T> {
 
     private static Observable addCacheAndThreads(Observable observable) {
         return observable.cache()
+//                .delay(1000, TimeUnit.MILLISECONDS)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread());
     }

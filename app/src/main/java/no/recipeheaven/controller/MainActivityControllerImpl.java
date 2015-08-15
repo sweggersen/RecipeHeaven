@@ -4,18 +4,23 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Rect;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.View;
 import android.widget.Toast;
 
+import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import no.recipeheaven.R;
 import no.recipeheaven.adapter.RecipeAdapter;
 import no.recipeheaven.api.RestBuilder;
 import no.recipeheaven.model.Recipe;
-import no.recipeheaven.utils.ItemClickSupport;
+import no.recipeheaven.util.EndlessRecyclerOnScrollListener;
+import no.recipeheaven.util.ItemClickSupport;
+import no.recipeheaven.util.RecyclerViewPositionHelper;
 import rx.Subscription;
 import rx.functions.Action1;
 import rx.subscriptions.CompositeSubscription;
@@ -25,11 +30,14 @@ import rx.subscriptions.CompositeSubscription;
  */
 public class MainActivityControllerImpl implements IActivityController {
 
+    public static final int RECIPE_LIMIT = 9;
+
     private Activity mActivity;
     private CompositeSubscription mCompositeSubscription = new CompositeSubscription();
     private RecipeAdapter mAdapter;
+    private SwipyRefreshLayout mSwipeRefreshLayout;
 
-    private List<Recipe> mRecipes;
+    private List<Recipe> mRecipes = new ArrayList<>();
 
     @Override
     public void initializeActivity(Activity activity) {
@@ -40,28 +48,30 @@ public class MainActivityControllerImpl implements IActivityController {
     public void onCreate(Bundle savedInstanceState) {
         setupRecyclerView();
 
-        mCompositeSubscription.add(subscribeRecipesList());
+        mCompositeSubscription.add(subscribeRecipesList(0));
     }
 
-    private Subscription subscribeRecipesList() {
-        return RestBuilder.getRecipeListObservable().subscribe(new Action1<List<Recipe>>() {
-            @Override
-            public void call(List<Recipe> recipes) {
-                mRecipes = recipes;
-                mAdapter.setRecipes(recipes);
-            }
-        });
+    private synchronized Subscription subscribeRecipesList(int offset) {
+        mSwipeRefreshLayout.setRefreshing(true);
+        return RestBuilder.getRecipeListObservable(offset, RECIPE_LIMIT)
+                .subscribe(new Action1<List<Recipe>>() {
+                    @Override
+                    public synchronized void call(List<Recipe> recipes) {
+                        mRecipes.addAll(recipes);
+                        mAdapter.addRecipes(recipes);
+                        mSwipeRefreshLayout.setRefreshing(false);
+                    }
+                });
     }
 
     private void setupRecyclerView() {
+        mSwipeRefreshLayout = (SwipyRefreshLayout) mActivity.findViewById(R.id.swipyrefreshlayout);
+        mSwipeRefreshLayout.setColorSchemeColors(mActivity.getResources().getColor(R.color.primary));;
+
         RecyclerView recyclerView = (RecyclerView) mActivity.findViewById(R.id.recyclerview);
 
-        LinearLayoutManager layoutManager =
-                new LinearLayoutManager(
-                        mActivity,                           // Context
-                        LinearLayoutManager.VERTICAL,   // Orientation
-                        false                           // ReverseLayout
-                );
+        StaggeredGridLayoutManager layoutManager =
+                new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
 
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
@@ -74,6 +84,12 @@ public class MainActivityControllerImpl implements IActivityController {
 
         mAdapter = new RecipeAdapter();
         recyclerView.setAdapter(mAdapter);
+        recyclerView.addOnScrollListener(new EndlessRecyclerOnScrollListener(RecyclerViewPositionHelper.createHelper(recyclerView)) {
+            @Override
+            public void onLoadMore(int currentPage) {
+                mCompositeSubscription.add(subscribeRecipesList(currentPage * RECIPE_LIMIT));
+            }
+        });
 
         ItemClickSupport.addTo(recyclerView).setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
             @Override
